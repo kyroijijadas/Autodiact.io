@@ -7,7 +7,7 @@ use PDO;
 use PDOException;
 
 class Database {
-    private string $host = "localhost";
+    private string $host = "localhost:3307";
     private string $db_name = "AutodidactIo";
     private string $username = "root";
     private string $password = "";
