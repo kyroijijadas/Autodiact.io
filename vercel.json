@@ -1,13 +1,14 @@
 {
-  "version": 2,
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/Backend/backend/$1"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "backend": {
+      "root": "Backend",
+      "framework": "express"
     },
-    {
-      "source": "/(.*)",
-      "destination": "/Frontend/frontend/$1"
+    "frontend": {
+      "root": "Frontend",
+      "framework": "vite"
     }
-  ]
+  },
+  "rewrites": []
 }
