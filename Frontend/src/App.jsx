@@ -14,6 +14,7 @@ import {
   applyForProfessorSubject,
   getMyProfessorApplications,
   getProfessorApplications,
+  reviewProfessorApplication,
 } from './api/professorApplications';
 import { getResults, submitAttempt } from './api/results';
 import { AuthModal } from './components/auth/AuthModal';
@@ -128,8 +129,14 @@ useEffect(() => {
     setQuizAccessRequests([]);
   }
 
-  async function handleReview(){
-
+  async function handleReview(applicationId, action) {
+    await reviewProfessorApplication(applicationId, action);
+    setApplications((current) => current.map((application) => (
+      application.id === applicationId
+        ? { ...application, status: action === 'approve' ? 'approved' : 'rejected' }
+        : application
+    )));
+    showToast(action === 'approve' ? 'Professor application approved.' : 'Professor application declined.');
   }
 
   async function handleApply(subject) {
