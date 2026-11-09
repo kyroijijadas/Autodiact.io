@@ -1,24 +1,14 @@
 import mysql from 'mysql2/promise';
 
-// Create a connection pool to handle multiple database requests efficiently
 const pool = mysql.createPool({
-    host: 'db',             // CRITICAL: We use 'db' instead of 'localhost' because Docker networks them by service name!
-    user: 'root',
-    password: 'rootpassword', // Matches the password in your docker-compose.yml
-    database: 'AutodidactIo',
+    host: process.env.DB_HOST || '127.0.0.1',
+    port: Number(process.env.DB_PORT || 3307),
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || process.env.MYSQL_ROOT_PASSWORD,
+    database: process.env.DB_NAME || 'AutodidactIo',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
 });
-
-// Test the connection when the server starts
-pool.getConnection()
-    .then(connection => {
-        console.log('Successfully connected to the Docker MySQL database!');
-        connection.release();
-    })
-    .catch(err => {
-        console.error('Error connecting to the database:', err.message);
-    });
 
 export default pool;

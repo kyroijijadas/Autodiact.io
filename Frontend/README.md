@@ -1,16 +1,25 @@
-# React + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The React app uses Vite and Tailwind CSS. Its `/api` requests are proxied to the Express backend during development.
 
-Currently, two official plugins are available:
+## Main flow
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. A new account starts as a student.
+2. The student applies to teach a subject.
+3. An admin approves or declines the application.
+4. An approved student becomes a professor and can create quizzes for the approved subject.
+5. Students browse available subjects and request access to individual quizzes.
+6. The quiz's professor approves or rejects each request.
+7. Approved students take the quiz and see their scores.
 
-## React Compiler
+After an application is approved, refresh the page to load the updated role.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Where to start
 
-## Expanding the ESLint configuration
+- `src/App.jsx` loads the current role's data and connects page actions to API calls.
+- `src/context/AuthContext.jsx` handles sign-in, registration, and the current account.
+- `src/pages/NavRoutes.jsx` selects the page for the current role.
+- `src/api` contains small modules for authentication, quizzes, professor applications, attempts, and results.
+- `src/components` contains the forms and shared layout used by those pages.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Run `npm run dev` from this folder to start the frontend.

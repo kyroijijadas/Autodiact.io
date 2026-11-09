@@ -1,28 +1,55 @@
 services:
-  # 1. Your Express API
+  # 1. Your React frontend
+  frontend:
+    build: ./Frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./Frontend:/app
+      - /app/node_modules
+    environment:
+      VITE_API_PROXY_TARGET: http://backend:3000
+    depends_on:
+      - backend
+
+  # 2. Your Express API
   backend:
     build: ./Backend
     ports:
       - "3000:3000"
     volumes:
-      # Syncs your local VS Code files to the container for hot-reloading
       - ./Backend:/app
       - /app/node_modules
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in the root .env file}
+      DB_NAME: ${MYSQL_DATABASE:-AutodidactIo}
+      NODE_ENV: ${NODE_ENV:-development}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in the root .env file}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
     depends_on:
-      - db
+      # 3. MySQL database
+      db:
+        condition: service_healthy
 
-  # 2. The MySQL Database
   db:
     image: mysql:8.0
     ports:
       - "3307:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: AutodidactIo
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in the root .env file}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-AutodidactIo}
     volumes:
       - db_data:/var/lib/mysql
+      - ./Backend/Database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping --protocol=TCP --host=127.0.0.1 --port=3306 --user=root --password=\"$${MYSQL_ROOT_PASSWORD}\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
-  # 3. Adminer (Your new phpMyAdmin replacement)
   adminer:
     image: adminer
     restart: always
