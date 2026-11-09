@@ -20,21 +20,21 @@ The interface shows only the pages needed for these three roles. Refresh after a
 
 Open the frontend at `http://localhost:5173`; the API is available at `http://localhost:3000`. The frontend's Vite proxy connects to the backend service inside Docker. MySQL Workbench connects to `127.0.0.1:3307` as `root` using `MYSQL_ROOT_PASSWORD`. A new database volume is initialized from `Backend/Database/schema.sql`. Existing database volumes are not overwritten; apply `Backend/Database/migrate_existing_database.sql` to add the latest schema changes. The migration can be run again safely.
 
-## Deploy to Vercel
+## Deploy to Vercel with Railway MySQL
 
-The Vercel project hosts the frontend and a same-origin `/api` proxy. The Express backend and MySQL database must also be deployed to internet-reachable hosting; Vercel cannot connect to your local XAMPP or Docker database.
+The root `vercel.json` deploys the frontend and Express backend as Vercel services. MySQL must run on a hosted provider; Vercel cannot connect to MySQL on your local XAMPP or Docker instance.
 
-1. Deploy the `Backend/` directory as a Node.js web service (for example, on Render) and provision a hosted MySQL database. Use `npm start` as the start command. Apply `Backend/Database/schema.sql` to a new database or `Backend/Database/migrate_existing_database.sql` to an existing one.
-2. Set these environment variables on the backend service:
-   - `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` for the hosted database.
-   - `JWT_SECRET` to a long, random secret.
-   - `NODE_ENV` to `production`.
-   - `FRONTEND_ORIGIN` to the exact Vercel site origin, such as `https://your-project.vercel.app`.
-3. In Vercel, import the repository and set **Root Directory** to `Frontend`. The build command is `npm run build`; the output directory is `dist`.
-4. Set the Vercel environment variable `BACKEND_URL` to the backend service's origin only, such as `https://your-api-service.onrender.com` (no trailing path or `/api`). Set it for Production and any Preview environments you use, then redeploy.
-5. Open `https://your-project.vercel.app/api/quizzes` to verify the proxy reaches the backend; it should return a JSON list (possibly empty). Then sign in through the site.
+1. In Railway, enable **Public Networking / TCP Proxy** for the MySQL service. Vercel cannot reach Railway's private `MYSQLHOST`/`MYSQLPORT` address.
+2. In Vercel Project Settings, add these environment variables for the backend deployment (Production, and Preview if needed):
+   - `DB_HOST` and `DB_PORT`: the Railway MySQL **public TCP proxy hostname and port**.
+   - `DB_USER`, `DB_PASSWORD`, `DB_NAME`: the Railway MySQL credentials and database name.
+   - `JWT_SECRET`: a long, random secret.
+   - `NODE_ENV=production`.
+3. If the frontend uses a separate Vercel origin, set `FRONTEND_ORIGIN` on the backend to that exact origin. The included Vercel service rewrite keeps API requests on the frontend origin.
+4. Apply `Backend/Database/schema.sql` to a new Railway database, or `Backend/Database/migrate_existing_database.sql` to an existing one.
+5. Redeploy Vercel. Check `https://your-project.vercel.app/api/health`; a working deployment returns `{"status":"ok","database":"connected"}`. Then test login.
 
-The proxy forwards the HttpOnly login cookie on the same Vercel origin, avoiding cross-site cookie restrictions. Keep database and JWT credentials only in the hosting providers' environment settings; never put them in `VITE_*` variables or commit them to the repository.
+Do not use Railway's private database hostname for `DB_HOST`; copy the public TCP proxy values. Keep database and JWT credentials only in hosting-provider environment settings, never in `VITE_*` variables or committed files.
 
 ## Admin account
 
